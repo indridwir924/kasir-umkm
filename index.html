@@ -145,6 +145,7 @@
       </thead>
       <tbody id="tabelInventaris"></tbody>
     </table>
+    <button type="button" class="btn-danger" id="btnReset" style="margin-top: 15px;">Reset Data Awal</button>
   </div>
 
   <div class="card">
@@ -203,18 +204,30 @@
 </div>
 
 <script>
-  let inventaris = JSON.parse(localStorage.getItem('inv_umkm_v1')) || [
+  const dataDefault = [
     { id: 1, nama: 'Kopi Susu Gula Aren', harga: 18000, stok: 15 },
     { id: 2, nama: 'Roti Bakar Cokelat', harga: 15000, stok: 4 },
     { id: 3, nama: 'Teh Melati Dingin', harga: 8000, stok: 25 }
   ];
+
+  let inventaris = [];
+  let riwayat = [];
   let keranjang = [];
-  let riwayat = JSON.parse(localStorage.getItem('riw_umkm_v1')) || [];
+
+  try {
+    const savedInv = JSON.parse(localStorage.getItem('inv_umkm_v2'));
+    inventaris = (Array.isArray(savedInv) && savedInv.length > 0) ? savedInv : JSON.parse(JSON.stringify(dataDefault));
+    const savedRiw = JSON.parse(localStorage.getItem('riw_umkm_v2'));
+    riwayat = Array.isArray(savedRiw) ? savedRiw : [];
+  } catch (e) {
+    inventaris = JSON.parse(JSON.stringify(dataDefault));
+    riwayat = [];
+  }
 
   function simpanData() {
     try {
-      localStorage.setItem('inv_umkm_v1', JSON.stringify(inventaris));
-      localStorage.setItem('riw_umkm_v1', JSON.stringify(riwayat));
+      localStorage.setItem('inv_umkm_v2', JSON.stringify(inventaris));
+      localStorage.setItem('riw_umkm_v2', JSON.stringify(riwayat));
     } catch (e) {}
   }
 
@@ -233,21 +246,13 @@
   function cetakStruk(dataTrx) {
     document.getElementById('strukWaktu').innerText = 'Waktu: ' + dataTrx.tanggal + ' ' + dataTrx.waktu;
     const containerItem = document.getElementById('strukDaftarItem');
-    containerItem.innerHTML = '';
-
-    dataTrx.items.forEach(function(item) {
-      const baris = document.createElement('div');
-      baris.style.marginBottom = '6px';
-      baris.innerHTML = `
-        <div>${item.nama}</div>
-        <div class="struk-item">
-          <span>${item.qty} x ${formatRupiah(item.harga)}</span>
-          <span>${formatRupiah(item.subtotal)}</span>
-        </div>
-      `;
-      containerItem.appendChild(baris);
-    });
-
+containerItem.innerHTML = '';
+dataTrx.items.forEach(function(item) {
+const baris = document.createElement('div');
+baris.style.marginBottom = '6px';
+baris.innerHTML = <div>${item.nama}</div> <div class="struk-item"> <span>${item.qty} x ${formatRupiah(item.harga)}</span> <span>${formatRupiah(item.subtotal)}</span> </div>;
+containerItem.appendChild(baris);
+});
 document.getElementById('strukTotal').innerText = formatRupiah(dataTrx.total);
 document.getElementById('strukBayar').innerText = formatRupiah(dataTrx.bayar);
 document.getElementById('strukKembali').innerText = formatRupiah(dataTrx.kembalian);
@@ -445,6 +450,14 @@ simpanData();
 renderUI();
 tampilkanPesan('Transaksi Berhasil! Kembalian: ' + formatRupiah(kembalian), 'success');
 setTimeout(function() { cetakStruk(dataTransaksiBaru); }, 500);
+});
+document.getElementById('btnReset').addEventListener('click', function() {
+inventaris = JSON.parse(JSON.stringify(dataDefault));
+riwayat = [];
+keranjang = [];
+simpanData();
+renderUI();
+tampilkanPesan('Data dikembalikan ke pengaturan awal.', 'success');
 });
 document.getElementById('uangBayar').addEventListener('input', updateKalkulasiBayar);
 renderUI();
