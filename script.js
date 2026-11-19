@@ -41,6 +41,7 @@ function cetakStruk(dataTrx) {
   document.getElementById('strukBayar').innerText = formatRupiah(dataTrx.bayar);
   document.getElementById('strukKembali').innerText = formatRupiah(dataTrx.kembalian);
 
+  // Memicu dialog print browser
   window.print();
 }
 
@@ -286,6 +287,7 @@ document.getElementById('btnBayar').addEventListener('click', function() {
   renderUI();
   tampilkanPesan('Transaksi Berhasil! Kembalian: ' + formatRupiah(kembalian), 'success');
 
+  // Otomatis tampilkan jendela cetak struk
   setTimeout(function() {
     cetakStruk(dataTransaksiBaru);
   }, 500);
