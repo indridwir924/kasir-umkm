@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Kasir & Inventaris Digital UMKM</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f7f6; margin: 0; padding: 20px; color: #333; }
+    .container { max-width: 1050px; margin: auto; }
+    header { background: #1e3a8a; color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+    header h1 { margin: 0; font-size: 24px; }
+    header p { margin: 5px 0 0; font-size: 14px; opacity: 0.9; }
+    .grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; }
+    @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    h2 { margin-top: 0; font-size: 18px; color: #1e3a8a; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px; }
+    .form-group { margin-bottom: 12px; }
+    .row-input { display: grid; grid-template-columns: 2fr 1fr; gap: 10px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; }
+    button { width: 100%; padding: 10px; background: #2563eb; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+    button:hover { background: #1d4ed8; }
+    .btn-warning { background: #d97706; margin-bottom: 15px; }
+    .btn-danger { background: #dc2626; padding: 4px 8px; width: auto; font-size: 11px; }
+    .btn-print { background: #0f172a; padding: 4px 8px; width: auto; font-size: 11px; }
+    .btn-success { background: #16a34a; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background-color: #f8fafc; font-weight: 600; }
+    .badge-low { background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .badge-ok { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    .summary-box { display: flex; justify-content: space-between; background: #eff6ff; padding: 12px 15px; border-radius: 8px; margin-top: 12px; border: 1px solid #bfdbfe; }
+    .summary-item h4 { margin: 0; font-size: 12px; color: #1e40af; }
+    .summary-item p { margin: 4px 0 0; font-size: 18px; font-weight: bold; color: #1e3a8a; }
+    .notif-box { padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none; font-size: 13px; font-weight: 600; }
+    .notif-error { background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
+    .notif-success { background: #dcfce7; color: #15803d; border: 1px solid #4ade80; }
+    .cart-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; margin-bottom: 12px; }
+    #areaStruk { display: none; }
+    @media print {
+      body { background: white; padding: 0; margin: 0; }
+      .container { display: none !important; }
+      #areaStruk { display: block !important; width: 280px; margin: 0 auto; font-family: 'Courier New', Courier, monospace; font-size: 12px; color: #000; }
+      .struk-header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+      .struk-header h3 { margin: 0; font-size: 15px; }
+      .struk-header p { margin: 2px 0; font-size: 11px; }
+      .struk-item { display: flex; justify-content: space-between; margin-bottom: 4px; }
+      .struk-divider { border-top: 1px dashed #000; margin: 8px 0; }
+      .struk-total { font-weight: bold; }
+      .struk-footer { text-align: center; margin-top: 12px; font-size: 11px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Sistem Kasir & Inventaris Digital UMKM</h1>
+    <p>Proyek Perancangan Digital – Berbasis Web (Multi-Item POS & Struk)</p>
+  </header>
+
+  <div id="pesanNotif" class="notif-box"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>1. Tambah / Update Stok Barang</h2>
+      <div class="form-group">
+        <label>Nama Barang</label>
+        <input type="text" id="namaBarang" placeholder="Contoh: Kopi Susu Botol">
+      </div>
+      <div class="form-group">
+        <label>Harga Satuan (Rp)</label>
+        <input type="number" id="hargaBarang" placeholder="Contoh: 15000">
+      </div>
+      <div class="form-group">
+        <label>Jumlah Stok Awal</label>
+        <input type="number" id="stokBarang" placeholder="Contoh: 20">
+      </div>
+      <button type="button" id="btnTambah">+ Simpan ke Inventaris</button>
+    </div>
+
+    <div class="card">
+      <h2>2. Transaksi Penjualan (Kasir)</h2>
+      <div class="row-input">
+        <div class="form-group">
+          <label>Pilih Barang</label>
+          <select id="pilihBarang">
+            <option value="">-- Pilih Barang --</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jumlah</label>
+          <input type="number" id="jumlahBeli" value="1" min="1">
+        </div>
+      </div>
+      <button type="button" class="btn-warning" id="btnTambahKeranjang">+ Tambah ke Keranjang Pesanan</button>
+
+      <div class="cart-box">
+        <strong style="font-size: 13px; color: #1e3a8a;">Daftar Pesanan Saat Ini (Keranjang):</strong>
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Qty</th>
+              <th>Subtotal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="tabelKeranjang">
+            <tr><td colspan="4" style="text-align:center; color:#64748b;">Keranjang masih kosong</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-group">
+        <label>Uang Dibayar Pelanggan (Rp)</label>
+        <input type="number" id="uangBayar" placeholder="Masukkan nominal bayar">
+      </div>
+      <div class="summary-box">
+        <div class="summary-item">
+          <h4>Total Tagihan</h4>
+          <p id="tampilTotal">Rp 0</p>
+        </div>
+        <div class="summary-item">
+          <h4>Kembalian</h4>
+          <p id="tampilKembalian">Rp 0</p>
+        </div>
+      </div>
+      <button type="button" class="btn-success" id="btnBayar">Proses Pembayaran & Cetak Struk</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3. Data Inventaris & Status Stok</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Barang</th>
+          <th>Harga</th>
+          <th>Sisa Stok</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelInventaris"></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>4. Riwayat Transaksi Penjualan</h2>
+    <div class="summary-box" style="margin-bottom: 15px;">
+      <div class="summary-item">
+        <h4>Total Transaksi Berhasil</h4>
+        <p id="totalTrxCount">0 Transaksi</p>
+      </div>
+      <div class="summary-item">
+        <h4>Total Pendapatan</h4>
+        <p id="totalPendapatan">Rp 0</p>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Waktu</th>
+          <th>Rincian Barang Dibeli</th>
+          <th>Total Harga</th>
+          <th>Bayar</th>
+          <th>Kembalian</th>
+          <th>Struk</th>
+        </tr>
+      </thead>
+      <tbody id="tabelRiwayat"></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="areaStruk">
+  <div class="struk-header">
+    <h3>KEDAI DIGITAL UMKM</h3>
+    <p>Jl. Perancangan Digital No. 1</p>
+    <p id="strukWaktu">Waktu: -</p>
+  </div>
+  <div id="strukDaftarItem"></div>
+  <div class="struk-divider"></div>
+  <div class="struk-item struk-total">
+    <span>TOTAL</span>
+    <span id="strukTotal">Rp 0</span>
+  </div>
+  <div class="struk-item">
+    <span>TUNAI</span>
+    <span id="strukBayar">Rp 0</span>
+  </div>
+  <div class="struk-item">
+    <span>KEMBALI</span>
+    <span id="strukKembali">Rp 0</span>
+  </div>
+  <div class="struk-divider"></div>
+  <div class="struk-footer">
+    <p>Terima Kasih Atas Kunjungan Anda!</p>
+    <p>Barang yang sudah dibeli tidak dapat ditukar</p>
+  </div>
+</div>
+
+<script>
+  let inventaris = [
+    { id: 1, nama: 'Kopi Susu Gula Aren', harga: 18000, stok: 15 },
+    { id: 2, nama: 'Roti Bakar Cokelat', harga: 15000, stok: 4 },
+    { id: 3, nama: 'Teh Melati Dingin', harga: 8000, stok: 25 }
+  ];
+  let keranjang = [];
+  let riwayat = [];
+
+  function tampilkanPesan(teks, tipe) {
+    const box = document.getElementById('pesanNotif');
+    box.innerText = teks;
+    box.className = 'notif-box ' + (tipe === 'error' ? 'notif-error' : 'notif-success');
+    box.style.display = 'block';
+    setTimeout(function() { box.style.display = 'none'; }, 4000);
+  }
+
+  function formatRupiah(angka) {
+    return 'Rp ' + angka.toLocaleString('id-ID');
+  }
+
+  function cetakStruk(dataTrx) {
+    document.getElementById('strukWaktu').innerText = 'Waktu: ' + dataTrx.tanggal + ' ' + dataTrx.waktu;
+    const containerItem = document.getElementById('strukDaftarItem');
+    containerItem.innerHTML = '';
+
+    dataTrx.items.forEach(function(item) {
+      const baris = document.createElement('div');
+      baris.style.marginBottom = '6px';
+      baris.innerHTML = `
+        <div>${item.nama}</div>
+        <div class="struk-item">
+          <span>${item.qty} x ${formatRupiah(item.harga)}</span>
+          <span>${formatRupiah(item.subtotal)}</span>
+        </div>
+      `;
+      containerItem.appendChild(baris);
+    });
+
+    document.getElementById('strukTotal').innerText = formatRupiah(dataTrx.total);
+    document.getElementById('strukBayar').innerText = formatRupiah(dataTrx.bayar);
+    document.getElementById('strukKembali').innerText = formatRupiah(dataTrx.kembalian);
+    window.print();
+  }
+
+  function hitungTotalKeranjang() {
+let total = 0;
+keranjang.forEach(function(item) { total += item.subtotal; });
+return total;
+}
+function updateKalkulasiBayar() {
+const total = hitungTotalKeranjang();
+const bayar = parseInt(document.getElementById('uangBayar').value) || 0;
+const kembalian = bayar - total;
+document.getElementById('tampilTotal').innerText = formatRupiah(total);
+if (total === 0) {
+document.getElementById('tampilKembalian').innerText = 'Rp 0';
+} else {
+document.getElementById('tampilKembalian').innerText = kembalian >= 0 ? formatRupiah(kembalian) : 'Kurang ' + formatRupiah(Math.abs(kembalian));
+}
+}
+function renderKeranjang() {
+const tbodyCart = document.getElementById('tabelKeranjang');
+tbodyCart.innerHTML = '';
+if (keranjang.length === 0) {
+tbodyCart.innerHTML = 'Keranjang masih kosong';
+updateKalkulasiBayar();
+return;
+}
+keranjang.forEach(function(item, index) {
+const tr = document.createElement('tr');
+tr.innerHTML = `
+${item.nama}
+${item.qty}
+${formatRupiah(item.subtotal)}
+Batal
+`;
+tbodyCart.appendChild(tr);
+});
+document.querySelectorAll('.btn-hapus-cart').forEach(function(btn) {
+btn.addEventListener('click', function() {
+const idx = parseInt(this.getAttribute('data-idx'));
+keranjang.splice(idx, 1);
+renderKeranjang();
+});
+});
+updateKalkulasiBayar();
+}
+function renderUI() {
+const tbodyInv = document.getElementById('tabelInventaris');
+const selectBrg = document.getElementById('pilihBarang');
+tbodyInv.innerHTML = '';
+selectBrg.innerHTML = '-- Pilih Barang --';
+inventaris.forEach(function(item, index) {
+const statusBadge = item.stok <= 5
+? 'Stok Menipis'
+: 'Tersedia';
+const tr = document.createElement('tr');
+tr.innerHTML = `
+${item.nama}
+${formatRupiah(item.harga)}
+${item.stok} pcs
+${statusBadge}
+Hapus
+`;
+tbodyInv.appendChild(tr);
+if (item.stok > 0) {
+const opt = document.createElement('option');
+opt.value = index;
+opt.textContent = ${item.nama} (${formatRupiah(item.harga)} | Stok: ${item.stok});
+selectBrg.appendChild(opt);
+}
+});
+document.querySelectorAll('.btn-hapus-inv').forEach(function(btn) {
+btn.addEventListener('click', function() {
+const idx = parseInt(this.getAttribute('data-idx'));
+inventaris.splice(idx, 1);
+renderUI();
+tampilkanPesan('Barang berhasil dihapus dari inventaris.', 'success');
+});
+});
+const tbodyRiw = document.getElementById('tabelRiwayat');
+tbodyRiw.innerHTML = '';
+let sumPendapatan = 0;
+riwayat.forEach(function(trx, index) {
+sumPendapatan += trx.total;
+const tr = document.createElement('tr');
+tr.innerHTML = `
+${trx.waktu}
+${trx.rincian}
+${formatRupiah(trx.total)}
+${formatRupiah(trx.bayar)}
+${formatRupiah(trx.kembalian)}
+Cetak Struk
+`;
+tbodyRiw.appendChild(tr);
+});
+document.querySelectorAll('.btn-cetak-ulang').forEach(function(btn) {
+btn.addEventListener('click', function() {
+const idx = parseInt(this.getAttribute('data-idx'));
+cetakStruk(riwayat[idx]);
+});
+});
+document.getElementById('totalTrxCount').innerText = riwayat.length + ' Transaksi';
+document.getElementById('totalPendapatan').innerText = formatRupiah(sumPendapatan);
+renderKeranjang();
+}
+document.getElementById('btnTambah').addEventListener('click', function() {
+const nama = document.getElementById('namaBarang').value.trim();
+const harga = parseInt(document.getElementById('hargaBarang').value);
+const stok = parseInt(document.getElementById('stokBarang').value);
+if (!nama || isNaN(harga) || harga <= 0 || isNaN(stok) || stok < 0) {
+tampilkanPesan('Harap isi nama barang, harga, dan stok dengan benar!', 'error');
+return;
+}
+const existingIndex = inventaris.findIndex(function(b) { return b.nama.toLowerCase() === nama.toLowerCase(); });
+if (existingIndex !== -1) {
+inventaris[existingIndex].harga = harga;
+inventaris[existingIndex].stok += stok;
+} else {
+inventaris.push({ id: Date.now(), nama: nama, harga: harga, stok: stok });
+}
+document.getElementById('namaBarang').value = '';
+document.getElementById('hargaBarang').value = '';
+document.getElementById('stokBarang').value = '';
+renderUI();
+tampilkanPesan('Barang berhasil disimpan ke inventaris!', 'success');
+});
+document.getElementById('btnTambahKeranjang').addEventListener('click', function() {
+const idx = document.getElementById('pilihBarang').value;
+const qty = parseInt(document.getElementById('jumlahBeli').value);
+if (idx === '') {
+tampilkanPesan('Pilih barang terlebih dahulu!', 'error');
+return;
+}
+const barang = inventaris[idx];
+if (isNaN(qty) || qty <= 0) {
+tampilkanPesan('Jumlah beli minimal 1!', 'error');
+return;
+}
+const existingCartIndex = keranjang.findIndex(function(c) { return c.id === barang.id; });
+const qtyDiKeranjang = existingCartIndex !== -1 ? keranjang[existingCartIndex].qty : 0;
+if (qty + qtyDiKeranjang > barang.stok) {
+tampilkanPesan('Total pesanan melebihi stok tersedia (' + barang.stok + ' pcs)!', 'error');
+return;
+}
+if (existingCartIndex !== -1) {
+keranjang[existingCartIndex].qty += qty;
+keranjang[existingCartIndex].subtotal = keranjang[existingCartIndex].qty * barang.harga;
+} else {
+keranjang.push({ id: barang.id, nama: barang.nama, harga: barang.harga, qty: qty, subtotal: barang.harga * qty });
+}
+document.getElementById('pilihBarang').value = '';
+document.getElementById('jumlahBeli').value = 1;
+renderKeranjang();
+});
+document.getElementById('btnBayar').addEventListener('click', function() {
+if (keranjang.length === 0) {
+tampilkanPesan('Keranjang pesanan masih kosong! Tambahkan barang terlebih dahulu.', 'error');
+return;
+}
+const total = hitungTotalKeranjang();
+const bayar = parseInt(document.getElementById('uangBayar').value);
+if (isNaN(bayar) || bayar < total) {
+tampilkanPesan('Uang pembayaran kurang dari total tagihan!', 'error');
+return;
+}
+const kembalian = bayar - total;
+let daftarRincian = [];
+let salinanItemStruk = [];
+keranjang.forEach(function(itemCart) {
+const invItem = inventaris.find(function(b) { return b.id === itemCart.id; });
+if (invItem) { invItem.stok -= itemCart.qty; }
+daftarRincian.push(itemCart.nama + ' (' + itemCart.qty + 'x)');
+salinanItemStruk.push({ nama: itemCart.nama, qty: itemCart.qty, harga: itemCart.harga, subtotal: itemCart.subtotal });
+});
+const now = new Date();
+const tanggalSekarang = now.toLocaleDateString('id-ID');
+const waktuSekarang = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const dataTransaksiBaru = {
+tanggal: tanggalSekarang,
+waktu: waktuSekarang,
+rincian: daftarRincian.join(', '),
+items: salinanItemStruk,
+total: total,
+bayar: bayar,
+kembalian: kembalian
+};
+riwayat.unshift(dataTransaksiBaru);
+keranjang = [];
+document.getElementById('uangBayar').value = '';
+renderUI();
+tampilkanPesan('Transaksi Berhasil! Kembalian: ' + formatRupiah(kembalian), 'success');
+setTimeout(function() { cetakStruk(dataTransaksiBaru); }, 500);
+});
+document.getElementById('uangBayar').addEventListener('input', updateKalkulasiBayar);
+renderUI();
